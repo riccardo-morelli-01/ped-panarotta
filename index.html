@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PED Panarotta · Piano editoriale social Inverno 2026–2027</title>
+<meta name="description" content="Il piano editoriale Instagram e Facebook della Panarotta per l'inverno 2026–2027: 51 contenuti, calendario, rubriche e fasi.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1C1C1C">
+<meta property="og:title" content="PED Panarotta · Inverno 2026–2027">
+<meta property="og:description" content="Calendario interattivo dei contenuti social: cosa pubblichiamo, quando e come.">
+<meta property="og:image" content="https://riccardo-morelli-01.github.io/ped-panarotta/assets/og.jpg">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.png">
+<link rel="preload" href="assets/montserrat.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#app">Vai al calendario</a>
+
+<header class="topbar" id="topbar">
+  <a class="brand" href="#top" aria-label="Inizio pagina"><img src="assets/mark.webp" alt="" width="60" height="18"><span>PED <b>Panarotta</b></span></a>
+  <nav class="topnav" aria-label="Sezioni">
+    <a href="#prossimo">Prossimo</a>
+    <a href="#app" data-goto="calendario">Calendario</a>
+    <a href="#app" data-goto="lista">Contenuti</a>
+    <a href="#app" data-goto="fasi">Fasi</a>
+    <a href="#strategia">Strategia</a>
+  </nav>
+</header>
+
+<main id="top">
+<section class="hero">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="hero-inner">
+    <div class="hero-text reveal">
+      <img class="hero-logo" src="assets/logo.webp" alt="Panarotta · Lagorai 2002" width="280" height="147">
+      <p class="eyebrow">Piano editoriale social · Bozza di lavoro</p>
+      <h1>Inverno<br><span class="gold nw">2026–2027</span></h1>
+      <p class="lead">Cosa pubblichiamo su <b>Instagram</b> e <b>Facebook</b>, quando e come: tutti i contenuti della stagione in un unico calendario.</p>
+      <div class="kpis" id="kpis"></div>
+      <p class="period">17 novembre 2026 – 14 marzo 2027 · 17 settimane · Martedì Reel · Giovedì Carosello · Sabato Reel</p>
+      <div class="hero-cta">
+        <a class="btn btn-gold" href="#app" data-goto="calendario">Apri il calendario</a>
+        <a class="btn btn-ghost" href="#strategia">La strategia in breve</a>
+      </div>
+    </div>
+    <figure class="hero-photo reveal">
+      <img src="assets/panarotta.webp" alt="La Panarotta d'inverno vista dall'alto: piste innevate, bosco e la cima sullo sfondo" width="665" height="1182" fetchpriority="high">
+    </figure>
+  </div>
+</section>
+
+<section class="next-wrap" id="prossimo" aria-live="polite"></section>
+
+<section class="app" id="app">
+  <div class="app-head">
+    <div class="tabs" role="tablist" aria-label="Viste">
+      <button role="tab" data-view="calendario" aria-selected="true">Calendario</button>
+      <button role="tab" data-view="lista" aria-selected="false">Contenuti</button>
+      <button role="tab" data-view="fasi" aria-selected="false">Fasi</button>
+    </div>
+    <button class="btn btn-small btn-ghost filter-toggle" id="filterToggle" aria-expanded="false" aria-controls="filters">Filtri <span class="badge-count" id="filterCount" hidden></span></button>
+  </div>
+
+  <div class="filters" id="filters">
+    <div class="search"><input type="search" id="q" placeholder="Cerca titolo, caption, idea…" aria-label="Cerca nei contenuti"></div>
+    <div class="fgroup"><span class="flabel">Formato</span><div class="chips" id="fFormato"></div></div>
+    <div class="fgroup"><span class="flabel">Rubrica</span><div class="chips" id="fRubrica"></div></div>
+    <div class="fgroup"><span class="flabel">Mese</span><div class="chips" id="fMese"></div></div>
+    <div class="fgroup frow">
+      <label class="sel"><span class="flabel">Fase</span><select id="fFase"></select></label>
+      <label class="sel"><span class="flabel">Piattaforma</span><select id="fPiatt"><option value="">Instagram + Facebook</option><option value="ig">Instagram</option><option value="fb">Facebook</option></select></label>
+      <label class="check"><input type="checkbox" id="fVerif"> Solo contenuti con verifiche o alternative</label>
+    </div>
+    <div class="factions"><span id="resultCount" class="muted"></span><button class="link" id="reset">Azzera filtri</button><button class="link" id="ics">Esporta calendario (.ics)</button></div>
+  </div>
+
+  <div class="view" id="view-calendario" role="tabpanel"></div>
+  <div class="view" id="view-lista" role="tabpanel" hidden></div>
+  <div class="view" id="view-fasi" role="tabpanel" hidden></div>
+</section>
+
+<section class="strategy" id="strategia"></section>
+</main>
+
+<footer class="footer">
+  <img src="assets/mark.webp" alt="" width="80" height="24">
+  <p><b>Piano in bozza</b> – date, aperture, offerte, eventi e collaborazioni sono da confermare con la gestione prima della pubblicazione.</p>
+  <p class="muted">Documento di lavoro del piano editoriale social Panarotta 2026–2027, condiviso per consultazione. Non è un canale informativo ufficiale della stazione. Nessun tracciamento, nessun cookie.</p>
+</footer>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <article class="sheet" role="dialog" aria-modal="true" aria-labelledby="mTitle" tabindex="-1" id="sheet"></article>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
