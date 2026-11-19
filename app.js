@@ -17,8 +17,8 @@ const RUBMAP = Object.fromEntries(RUBRICHE.map(r => [r.id, r]));
 const FORMATI = [{id:'Reel', c:'var(--reel)'}, {id:'Carosello', c:'var(--car)'}, {id:'Post', c:'var(--post)'}, {id:'Stories', c:'var(--story)'}];
 const FCOL = Object.fromEntries(FORMATI.map(f => [f.id, f.c]));
 const MESI = [
-  {k:'2026-11', nome:'Novembre', anno:2026, sub:'Facciamo crescere l’attesa'},
-  {k:'2026-12', nome:'Dicembre', anno:2026, sub:'Prepariamo l’apertura e valorizziamo il Natale'},
+  {k:'2026-11', nome:'Novembre', anno:2026, sub:'Preparazione interna di materiali e riprese'},
+  {k:'2026-12', nome:'Dicembre', anno:2026, sub:'Lancio, apertura e festività'},
   {k:'2027-01', nome:'Gennaio', anno:2027, sub:'Fidelizzazione e nuove esperienze'},
   {k:'2027-02', nome:'Febbraio', anno:2027, sub:'Famiglie, Carnevale e partecipazione'},
   {k:'2027-03', nome:'Marzo', anno:2027, sub:'Ultime giornate e racconto della stagione'}
@@ -159,20 +159,19 @@ function bindFilters(){
 // --- calendar ---
 function renderCalendar(){
   const list = filtered(); const ids = new Set(list.map(p => p.n));
-  if (!S.month){ const m = MESI.find(m => TODAY.startsWith(m.k)); S.month = m ? m.k : (TODAY < '2026-11' ? '2026-11' : '2027-03'); }
+  if (!S.month){ const first = POSTS.filter(p => !p.extra)[0]; const m = MESI.find(m => TODAY.startsWith(m.k) && POSTS.some(p => p.date.startsWith(m.k) && !p.extra)); S.month = m ? m.k : (first ? first.date.slice(0,7) : '2026-12'); }
   const M = MESI.find(m => m.k === S.month);
   const [y, mo] = S.month.split('-').map(Number);
   const first = new Date(y, mo-1, 1), days = new Date(y, mo, 0).getDate();
   let lead = (first.getDay() + 6) % 7, startD = 1, endD = days;
-  if (S.month === '2026-11'){ startD = 16; lead = 0; }   // la stagione parte lunedì 16/11 (primo post 17/11)
-  if (S.month === '2027-03'){ endD = 21; }                // ultima settimana: 15–21 marzo
+  if (S.month === '2027-03'){ endD = 21; }                // ultima settimana: 15–21 marzo (post di chiusura)
   const byDate = {}; POSTS.forEach(p => (byDate[p.date] ||= []).push(p));
   const monthCount = k => list.filter(p => p.date.startsWith(k) && !p.extra).length;
   let cells = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'].map(d => `<div class="dow">${d}</div>`).join('');
   for (let i=0;i<lead;i++) cells += `<div class="day empty"></div>`;
   for (let d=startD; d<=endD; d++){
     const ds = `${y}-${pad(mo)}-${pad(d)}`;
-    const inSeason = ds >= '2026-11-17' && ds <= '2027-03-16';
+    const inSeason = ds >= '2026-12-01' && ds <= '2027-03-16';
     const ph = FASI.find(f => f.dal === ds);
     const hol = isHoliday(ds);
     const chips = (byDate[ds]||[]).map(p => `<button class="pchip ${ids.has(p.n)?'':'dim'}" style="--c:${FCOL[p.tipo]}" data-open="${p.n}" aria-label="#${nn(p.n)} ${esc(p.titolo)}, ${esc(p.tipo)}"><span class="t">${p.extra?'Extra':'#'+nn(p.n)} ${p.tipo==='Carosello'?'Car.':p.tipo}</span><span class="tt">${esc(p.titolo)}</span></button>`).join('');
@@ -196,7 +195,7 @@ function card(p, i){
   return `<button class="card" style="--rc:${rc(p)};animation-delay:${Math.min(i,12)*30}ms" data-open="${p.n}">
     <div class="top"><span><span class="no">${p.extra?'Extra':'#'+nn(p.n)}</span> · ${esc(p.dataTesto ? '15/16 mar 2027' : p.giorno+' '+shortDate(p.date))}</span><span class="tag fmt" style="--fc:${FCOL[p.tipo]}">${p.tipo}${p.durata?' · '+esc(p.durata):''}</span></div>
     <h4>${esc(p.titolo)}</h4>
-    <div class="rub">${esc(p.rubrica || 'Fuori dalle 51 pubblicazioni')}</div>
+    <div class="rub">${esc(p.rubrica || 'Fuori dalle 45 pubblicazioni')}</div>
     <div class="obj">${esc(p.obiettivo)}</div>
     <div class="tags"><span class="tag">Fase ${p.fase} · ${esc(f.nome)}</span>${p.daConfermare?'<span class="tag warn">Da verificare</span>':''}${p.extra?'<span class="tag extra">Extra · data da confermare</span>':''}</div>
   </button>`;
@@ -226,7 +225,7 @@ function renderList(){
 // --- phases ---
 function renderPhases(){
   const list = filtered(); const ids = new Set(list.map(p => p.n));
-  const total = (parse('2027-03-14') - parse('2026-11-17'))/864e5 + 1;
+  const total = (parse(FASI[FASI.length-1].al) - parse(FASI[0].dal))/864e5 + 1;
   const cols = ['#8C7B6E','#A38D68','#B9A07A','#D6C3A1','#BFD6E3','#8FB9A8'];
   const tl = FASI.map((f,i) => `<i title="Fase ${f.id}: ${esc(f.nome)}" style="flex:${(parse(f.al)-parse(f.dal))/864e5+1};background:${cols[i]}"></i>`).join('');
   $('#view-fasi').innerHTML = `<div class="timeline" aria-hidden="true">${tl}</div><div class="phases">${FASI.map((f,i) => {
@@ -273,7 +272,7 @@ function openPost(n, push){
 function drawSheet(){
   const p = current, f = faseOf(p.fase), i = POSTS.indexOf(p);
   const prev = POSTS[i-1], next = POSTS[i+1];
-  const facts = [['Formato', p.formato], ['Rubrica', p.rubrica || 'Fuori calendario (extra)'], ['Fase', `${f.id}. ${f.nome}`], ['Settimana', p.extra ? '—' : `${p.settimana} di 17`], ['Piattaforme', 'Instagram + Facebook'], ['Sessione di ripresa', p.sessione || (p.tipo==='Reel' || p.extra ? '—' : 'Grafico, su modelli ricorrenti')]];
+  const facts = [['Formato', p.formato], ['Rubrica', p.rubrica || 'Fuori calendario (extra)'], ['Fase', `${f.id}. ${f.nome}`], ['Settimana', p.extra ? '—' : `${p.settimana} di 15`], ['Piattaforme', 'Instagram + Facebook'], ['Sessione di ripresa', p.sessione || (p.tipo==='Reel' || p.extra ? '—' : 'Grafico, su modelli ricorrenti')]];
   const secHtml = p.sezioni.map(s => {
     const L = s.label;
     if (L.startsWith('Caption')){
@@ -294,7 +293,7 @@ function drawSheet(){
   $('#sheet').style.setProperty('--rc', rc(p));
   $('#sheet').innerHTML = `
     <header class="sh-head">
-      <div class="sh-bar"><span class="left">${p.extra ? 'CONTENUTO EXTRA' : `CONTENUTO ${nn(p.n)} / 51`}</span>
+      <div class="sh-bar"><span class="left">${p.extra ? 'CONTENUTO EXTRA' : `CONTENUTO ${nn(p.n)} / 45`}</span>
         <span style="display:flex;gap:6px"><button class="iconbtn" data-nav="${prev?prev.n:''}" ${prev?'':'disabled'} aria-label="Contenuto precedente">‹</button><button class="iconbtn" data-nav="${next?next.n:''}" ${next?'':'disabled'} aria-label="Contenuto successivo">›</button><button class="iconbtn" data-close aria-label="Chiudi">✕</button></span></div>
       <div class="sh-date">${esc(fmtDate(p))}</div>
       <h2 id="mTitle">${esc(p.titolo)}</h2>
@@ -365,7 +364,7 @@ function renderStrategy(){
       ${[['Famiglie, principianti e informazioni utili',60,'var(--car)'],['Emozioni, territorio e community',25,'var(--gold)'],['Promozioni ed eventi',15,'var(--r-appuntamento)']].map(b => `<div class="barrow"><div class="lab"><span>${b[0]}</span><b>${b[1]}%</b></div><div class="track"><div class="fill" data-w="${b[1]}" style="background:${b[2]}"></div></div></div>`).join('')}
     </div><p class="muted" style="margin-top:12px;font-size:13px">Ripartizione strategica proposta, esclusi gli aggiornamenti urgenti.</p></div>
     <div class="box reveal"><h3>Contenuti per mese</h3><div class="months">
-      ${byM.map(x => { const r = x.ps.filter(p => p.tipo==='Reel').length; return `<div class="mcol"><b>${x.ps.length}</b><div class="col" data-h="${x.ps.length/max*100}" title="${r} Reel, ${x.ps.length-r} caroselli/post"><i style="height:${(x.ps.length-r)/x.ps.length*100}%"></i></div><span>${x.m.nome.slice(0,3)}</span></div>`; }).join('')}
+      ${byM.map(x => { const r = x.ps.filter(p => p.tipo==='Reel').length; return `<div class="mcol"><b>${x.ps.length}</b><div class="col" data-h="${max?x.ps.length/max*100:0}" title="${r} Reel, ${x.ps.length-r} caroselli/post"><i style="height:${x.ps.length?(x.ps.length-r)/x.ps.length*100:0}%"></i></div><span>${x.m.nome.slice(0,3)}</span></div>`; }).join('')}
     </div><div class="legend"><span><i class="dot" style="background:var(--gold)"></i>Reel</span><span><i class="dot" style="background:var(--car)"></i>Caroselli e post</span></div></div>
     <div class="box w12 reveal"><h3>Il ritmo di ogni settimana</h3><div class="week">
       ${[['Lun','Stories leggere o pausa'],['Mar','Reel emozionale o educativo',1],['Mer','Stories interattive'],['Gio','Carosello informativo o promozionale',1],['Ven','Stories sul weekend'],['Sab','Reel esperienza o community',1],['Dom','Stories sul campo, quando possibile']].map(d => `<div class="wd ${d[2]?'key':''}"><b>${d[0]}</b><span>${d[1]}</span></div>`).join('')}
